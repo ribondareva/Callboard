@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои отклики</title>
+</head>
+<body>
+    <h1>Отклики на ваши объявления</h1>
+    {% for announcement in announcements %}
+        <h2>{{ announcement.title }}</h2>
+        <ul>
+            {% for response in announcement.responses.all %}
+                <li>
+                    <p>{{ response.author.username }}: {{ response.content }}</p>
+                    <form method="post" action="{% url 'manage_response' response.id %}">
+                        {% csrf_token %}
+                        {% if not response.accepted %}
+                            <button type="submit" name="action" value="accept">Принять</button>
+                        {% endif %}
+                        <button type="submit" name="action" value="delete">Удалить</button>
+                    </form>
+                </li>
+            {% empty %}
+                <p>Нет откликов.</p>
+            {% endfor %}
+        </ul>
+    {% empty %}
+        <p>Нет ваших объявлений.</p>
+    {% endfor %}
+</body>
+</html>

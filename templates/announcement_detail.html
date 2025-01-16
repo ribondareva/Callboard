@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ announcement.title }}</title>
+</head>
+<body>
+    <h1>{{ announcement.title }}</h1>
+    <p>Категория: {{ announcement.get_category_display }}</p>
+    <p>Автор: {{ announcement.author.authorUser.username }}</p>
+    <p>Дата: {{ announcement.created_at|date:"d.m.Y H:i" }}</p>
+    <p>{{ announcement.text }}</p>
+
+    <hr>
+    <h2>Отклики</h2>
+    <ul>
+        {% for response in responses %}
+            <li>
+                <p>{{ response.author.username }}: {{ response.content }}</p>
+                <p>Дата: {{ response.created_at|date:"d.m.Y H:i" }}</p>
+            </li>
+        {% empty %}
+            <p>Нет откликов.</p>
+        {% endfor %}
+    </ul>
+
+    <hr>
+    <h2>Оставить отклик</h2>
+    <form method="post" action="{% url 'create_response' announcement.id %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Отправить</button>
+    </form>
+</body>
+</html>

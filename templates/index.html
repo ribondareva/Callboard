@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Объявления</title>
+</head>
+<body>
+    <h1>Объявления</h1>
+    <a href="{% url 'create_announcement' %}">Создать объявление</a>
+    <ul>
+        {% for announcement in announcements %}
+            <li>
+                <h2><a href="{% url 'announcement_detail' announcement.id %}">{{ announcement.title }}</a></h2>
+                <p>Категория: {{ announcement.get_category_display }}</p>
+                <p>Автор: {{ announcement.author.authorUser.username }}</p>
+                <p>Дата: {{ announcement.created_at|date:"d.m.Y H:i" }}</p>
+            </li>
+        {% empty %}
+            <p>Нет доступных объявлений.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>
