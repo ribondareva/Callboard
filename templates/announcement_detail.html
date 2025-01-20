@@ -1,7 +1,13 @@
 <!DOCTYPE html>
+{% load static %}
+{% load custom_filters %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="css/styles.css" rel="stylesheet" />
+    <a href="{% url 'index' %}">Ко всем объявлениям</a>
     <title>{{ announcement.title }}</title>
 </head>
 <body>
@@ -9,8 +15,19 @@
     <p>Категория: {{ announcement.get_category_display }}</p>
     <p>Автор: {{ announcement.author.authorUser.username }}</p>
     <p>Дата: {{ announcement.created_at|date:"d.m.Y H:i" }}</p>
-    <p>{{ announcement.text }}</p>
+    <p>{{ announcement.text|safe }}</p>
 
+
+
+
+
+
+
+    {% if perms.board.change_announcement  %}
+        <a href="{% url 'edit_announcement' announcement.id %}">Редактировать объявление</a>
+    {% else %}
+        <p>У вас нет прав для редактирования этого объявления.</p>
+    {% endif %}
     <hr>
     <h2>Отклики</h2>
     <ul>

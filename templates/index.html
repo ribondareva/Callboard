@@ -1,12 +1,19 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="css/styles.css" rel="stylesheet" />
     <title>Объявления</title>
 </head>
 <body>
     <h1>Объявления</h1>
-    <a href="{% url 'create_announcement' %}">Создать объявление</a>
+    {% if perms.board.add_announcement  %}
+        <a href="{% url 'create_announcement' %}">Создать объявление</a>
+    {% endif %}
+    <a href="responses/" class="btn btn-primary">Отклики на мои объявления</a>
     <ul>
         {% for announcement in announcements %}
             <li>

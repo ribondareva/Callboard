@@ -14,7 +14,6 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATICFILES_DIRS = [BASE_DIR / "static"]
 
 
 # Quick-start development settings - unsuitable for production
@@ -40,10 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django.contrib.sites",
     "django.contrib.flatpages",
-    'board',
+    "board.apps.BoardConfig",
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'django_ckeditor_5',
 ]
 
 SITE_ID = 1
@@ -135,6 +135,38 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'heading', '|',
+            'bold', 'italic', 'underline', 'strikethrough', 'alignment', '|',
+            'link', 'bulletedList', 'numberedList', '|',
+            'blockQuote', 'insertTable', 'horizontalLine', '|',
+            'mediaEmbed',
+            'imageUpload', 'videoUpload',
+            'undo', 'redo',
+
+        ],
+        'image': {
+            'styles': ['alignLeft', 'alignCenter', 'alignRight'],  # Стили изображения
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:alignCenter', 'imageStyle:alignRight']
+        },
+        'height': 400,
+        'width': '100%',
+        'mediaEmbed': {
+            'previewsInData': True,  # Позволяет вставлять видео как медиаэлемент
+        },
+    }
+}
+
+CKEDITOR_UPLOAD_PATH = 'uploads/'  # Папка для хранения загруженных файлов
+CKEDITOR_RESTRICT_BY_USER = True
 
 
 AUTHENTICATION_BACKENDS = (
@@ -142,27 +174,27 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',  # Для allauth
 )
 
-LOGIN_URL = '/accounts/login/'  # URL для перенаправления на страницу входа
-LOGIN_REDIRECT_URL = '/'  # URL после успешного входа
-LOGOUT_REDIRECT_URL = '/'  # URL после выхода
-ACCOUNT_SIGNUP_REDIRECT_URL = '/'  # Куда перенаправлять после регистрации
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/'
-ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/accounts/login/'
+# settings.py
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+LOGIN_REDIRECT_URL = '/'
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Обязательная проверка email
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True  # Подтверждение email через ссылку
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Обязательная проверка email
 
+ACCOUNT_FORMS = {'signup': 'board.forms.CustomSignupForm'}
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Callboard] '  # Префикс в теме письма
+ACCOUNT_SIGNUP_REDIRECT_URL = '/send-verification-email/'
+
 # настройки почты
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True

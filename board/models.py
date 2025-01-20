@@ -1,5 +1,13 @@
-from django.contrib.auth.models import User
 from django.db import models
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from allauth.account.signals import user_signed_up
+from django_ckeditor_5.fields import CKEditor5Field
+
+@receiver(user_signed_up)
+def set_inactive_user(sender, request, user, **kwargs):
+    user.is_active = True
+    user.save()
 
 
 class Author(models.Model):
@@ -32,8 +40,20 @@ class Announcement(models.Model):
     category = models.CharField(max_length=2, choices=CATEGORY_CHOICES, default='TA')
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='ann')
     title = models.CharField(max_length=255)
-    text = models.TextField()
+    text = CKEditor5Field(
+        'Content',
+        config_name='default',  # Ссылка на конфигурацию в settings.py
+        blank=True,
+        null=True    )
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        permissions = [
+            ('can_add_announcement', 'Can add announcement'),
+            ('can_change_announcement', 'Can change announcement'),
+            ('can_delete_announcement', 'Can delete announcement'),
+        ]
 
     def __str__(self):
         return self.title

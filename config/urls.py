@@ -16,9 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from board import views
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
+    path('accounts/signup/', views.signup, name='signup'),
+    path('send-verification-email/', views.send_verification_email, name='send_verification_email'),
+    path('verify-code/', views.verify_code, name='verify_code'),
+    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('', include('board.urls')),
+    path('ckeditor5/', include('django_ckeditor_5.urls')),
+
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

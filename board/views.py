@@ -1,12 +1,98 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
-from .models import Announcement, Response, Author, Category
-from .forms import AnnouncementForm, ResponseForm
-from allauth.account.forms import SignupForm
-from django import forms
+from .models import Announcement, Response, Author
+from .forms import AnnouncementForm, ResponseForm, EmailVerificationForm
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+import random
+
+
+# Функция для генерации кода подтверждения
+def generate_verification_code():
+    return str(random.randint(100000, 999999))  # Генерация 6-значного кода
+
+
+# Форма регистрации
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()  # Сохраняем пользователя
+            messages.success(request, "Вы успешно зарегистрировались!")
+            return redirect('send_verification_email')  # Переход на страницу отправки email с кодом
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'registration/signup.html', {'form': form})
+
+
+# Функция для отправки кода подтверждения на email
+def send_verification_email(request):
+    if request.method == 'POST':
+        form = EmailVerificationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            user = User.objects.filter(email=email).first()
+
+            if user:
+                try:
+                    # Генерация кода подтверждения
+                    verification_code = generate_verification_code()
+
+                    # Отправка кода на email
+                    send_mail(
+                        'Код подтверждения',
+                        f'Ваш код подтверждения: {verification_code}',
+                        'mnikitina2001@gmail.com',
+                        [email],
+                        fail_silently=False,
+                    )
+
+                    # Сохраняем код в сессии
+                    request.session['verification_code'] = verification_code
+                    request.session['email'] = email
+
+                    messages.success(request, "Код подтверждения был отправлен на ваш email.")
+                    return redirect('verify_code')  # Переход на страницу для ввода кода
+                except Exception as e:
+                    messages.error(request, f"Ошибка отправки email: {e}")
+                    return redirect('send_verification_email')  # Переход на страницу отправки email
+    else:
+        form = EmailVerificationForm()
+
+    return render(request, 'account/email/send_verification_email.html', {'form': form})
+
+
+# Форма для ввода кода подтверждения
+def verify_code(request):
+    if request.method == 'POST':
+        entered_code = request.POST.get('verification_code')
+
+        # Получаем код из сессии
+        stored_code = request.session.get('verification_code')
+
+        if entered_code == stored_code:
+            # Если коды совпадают, подтверждаем email
+            email = request.session.get('email')
+            user = User.objects.filter(email=email).first()
+            if user:
+                user.is_active = True  # Активируем пользователя
+                user.save()
+                messages.success(request, "Ваш email успешно подтвержден!")
+                return redirect('login')  # Переход на страницу логина
+            else:
+                messages.error(request, "Пользователь не найден.")
+                return redirect('verify_code')
+        else:
+            messages.error(request, "Неверный код подтверждения.")
+            return redirect('verify_code')  # Переход на страницу ввода кода
+
+    return render(request, 'account/email/verify_code.html')
 
 
 # Главная страница
@@ -27,6 +113,7 @@ def announcement_detail(request, pk):
 
 # Создание объявления
 @login_required
+@permission_required('board.can_add_announcement', raise_exception=True)
 def create_announcement(request):
     if not hasattr(request.user, 'author'):
         Author.objects.create(authorUser=request.user)
@@ -46,6 +133,7 @@ def create_announcement(request):
 
 # Редактирование объявления
 @login_required
+@permission_required('board.can_change_announcement', raise_exception=True)
 def edit_announcement(request, pk):
     announcement = get_object_or_404(Announcement, pk=pk)
 
@@ -65,6 +153,7 @@ def edit_announcement(request, pk):
 
 # Удаление объявления
 @login_required
+@permission_required('board.can_delete_announcement', raise_exception=True)
 def delete_announcement(request, pk):
     announcement = get_object_or_404(Announcement, pk=pk)
 
@@ -92,7 +181,7 @@ def create_response(request, pk):
             # send_mail(
             #     'Новый отклик на ваше объявление',
             #     f'Вы получили новый отклик: {response.content}',
-            #     'from@example.com',
+            #     'mnikitina2001@gmail.com',
             #     [announcement.author.authorUser.email],
             # )
 
