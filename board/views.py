@@ -166,6 +166,7 @@ def delete_announcement(request, pk):
 
 # Создание отклика
 @login_required
+@permission_required('board.can_add_response', raise_exception=True)
 def create_response(request, pk):
     announcement = get_object_or_404(Announcement, pk=pk)
 

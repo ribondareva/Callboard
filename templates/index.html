@@ -5,15 +5,16 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Core theme CSS (includes Bootstrap)-->
-    <link href="css/styles.css" rel="stylesheet" />
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <title>Объявления</title>
 </head>
 <body>
     <h1>Объявления</h1>
     {% if perms.board.add_announcement  %}
-        <a href="{% url 'create_announcement' %}">Создать объявление</a>
+        <a href="announcement/create/" class="btn btn-primary">Создать объявление</a>
+        <a href="responses/" class="btn btn-primary">Отклики на мои объявления</a>
     {% endif %}
-    <a href="responses/" class="btn btn-primary">Отклики на мои объявления</a>
+
     <ul>
         {% for announcement in announcements %}
             <li>

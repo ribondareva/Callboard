@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from allauth.account.signals import user_signed_up
 from django_ckeditor_5.fields import CKEditor5Field
 
+
 @receiver(user_signed_up)
 def set_inactive_user(sender, request, user, **kwargs):
     user.is_active = True
@@ -65,6 +66,12 @@ class Response(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     accepted = models.BooleanField(default=False)
+
+    class Meta:
+        permissions = [
+            ('can_add_response', 'Can add response'),
+            ('can_delete_response', 'Can delete response'),
+        ]
 
     def __str__(self):
         return f"Response by {self.author} to {self.announcement.title}"

@@ -1,13 +1,18 @@
 from django import forms
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
 from .models import Announcement, Response
 from allauth.account.forms import SignupForm
 
 
 authors, created = Group.objects.get_or_create(name="authors")
-permissions = Permission.objects.filter(content_type__model='announcement')
-authors.permissions.add(*permissions)
+announcement_permissions = Permission.objects.filter(content_type__model='announcement')
+authors.permissions.add(*announcement_permissions)
+
+response_content_type = ContentType.objects.get(model='response')
+response_permissions = Permission.objects.filter(content_type=response_content_type)
+authors.permissions.add(*response_permissions)
 
 
 class CustomSignupForm(SignupForm):
