@@ -57,8 +57,11 @@
 ```bash
 git clone https://github.com/ribondareva/Callboard.git
 cd Callboard
+```
+
 ### 2. Установка зависимостей
 Убедитесь, что у вас установлен Python и pip, затем выполните:
+
 pip install -r requirements.txt
 ### 3. Настройка окружения
 Создайте файл .env в корневой директории проекта со следующим содержимым:
