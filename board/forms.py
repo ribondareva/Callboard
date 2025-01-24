@@ -19,8 +19,6 @@ class CustomSignupForm(SignupForm):
     def save(self, request):
         user = super().save(request)
         user.groups.add(authors)
-        # permission_user = Permission.objects.get(codename='can_add_announcement')
-        # user.user_permissions.add(permission_user)
         return user
 
 
