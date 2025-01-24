@@ -6,30 +6,35 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
         <!-- Core theme CSS (includes Bootstrap)-->
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <a href="{% url 'index' %}">Ко всем объявлениям</a>
     <title>Мои отклики</title>
 </head>
 <body>
     <h1>Отклики на ваши объявления</h1>
-    {% for announcement in announcements %}
-        <h2>{{ announcement.title }}</h2>
-        <ul>
-            {% for response in announcement.responses.all %}
-                <li>
-                    <p>{{ response.author.username }}: {{ response.content }}</p>
-                    <form method="post" action="{% url 'manage_response' response.id %}">
-                        {% csrf_token %}
-                        {% if not response.accepted %}
-                            <button type="submit" name="action" value="accept">Принять</button>
-                        {% endif %}
-                        <button type="submit" name="action" value="delete">Удалить</button>
-                    </form>
-                </li>
-            {% empty %}
-                <p>Нет откликов.</p>
-            {% endfor %}
-        </ul>
-    {% empty %}
-        <p>Нет ваших объявлений.</p>
-    {% endfor %}
+    <form method="get">
+        {% if filter.form %}
+            {{ filter.form.as_p }}
+        {% else %}
+            <p>Форма фильтрации не доступна</p>
+        {% endif %}
+            <button type="submit">Искать</button>
+    </form>
+{% for response in responses %}
+    <h2>{{ response.announcement.title }}</h2>
+    <ul>
+        <li>
+            <p>{{ response.author.username }}: {{ response.content }}</p>
+            <form method="post" action="{% url 'manage_response' response.id %}">
+                {% csrf_token %}
+                {% if not response.accepted %}
+                    <button type="submit" name="action" value="accept">Принять</button>
+                {% endif %}
+                <button type="submit" name="action" value="delete">Удалить</button>
+            </form>
+        </li>
+    </ul>
+{% empty %}
+    <p>Нет откликов.</p>
+{% endfor %}
 </body>
 </html>
