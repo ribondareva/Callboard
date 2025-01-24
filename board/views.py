@@ -194,12 +194,12 @@ def create_response(request, pk):
             response.save()
 
             # Отправка уведомления о новом отклике
-            send_mail(
-                subject='Новый отклик на ваше объявление',
-                message=f'Вы получили новый отклик: "{response.content}" от {response.author}',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[announcement.author.authorUser.email],
-            )
+            # send_mail(
+            #     subject='Новый отклик на ваше объявление',
+            #     message=f'Вы получили новый отклик: "{response.content}" от {response.author}',
+            #     from_email=settings.DEFAULT_FROM_EMAIL,
+            #     recipient_list=[announcement.author.authorUser.email],
+            # )
 
             return redirect('announcement_detail', pk=pk)
     else:
@@ -237,12 +237,12 @@ def manage_response(request, pk):
             response.save()
 
             # Уведомление автору отклика
-            send_mail(
-                subject='Ваш отклик был принят!',
-                message=f'Ваш отклик на объявление "{response.announcement.title}" был принят.',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[response.author.email],
-            )
+            # send_mail(
+            #     subject='Ваш отклик был принят!',
+            #     message=f'Ваш отклик на объявление "{response.announcement.title}" был принят.',
+            #     from_email=settings.DEFAULT_FROM_EMAIL,
+            #     recipient_list=[response.author.email],
+            # )
         elif action == 'delete':
             response.delete()
 
