@@ -1,3 +1,41 @@
-Django
-django-allauth
-CKEditor 5
+# Основные зависимости для Django
+Django==5.1.5
+django-allauth==65.3.1
+django-filter==24.3
+django-ckeditor-5==0.2.15
+django-js-asset==3.0.1
+django-timezone-field==7.1
+sqlparse==0.5.3
+tzdata==2024.2
+python-decouple==3.8
+
+# Celery и связанные библиотеки
+celery==5.4.0
+billiard==4.2.1
+kombu==5.4.2
+vine==5.1.0
+django-celery-beat==2.7.0
+django-celery-results==2.5.1
+
+# Redis и AMQP
+redis==5.2.1
+amqp==5.3.1
+
+# Вспомогательные зависимости
+asgiref==3.8.1
+pillow==11.1.0
+python-dateutil==2.9.0.post0
+six==1.17.0
+
+# CLI и интерактивные инструменты
+click==8.1.8
+click-didyoumean==0.3.1
+click-plugins==1.1.1
+click-repl==0.3.0
+colorama==0.4.6
+prompt_toolkit==3.0.50
+wcwidth==0.2.13
+
+# Cron и управление задачами
+cron-descriptor==1.4.5
+python-crontab==3.2.0
