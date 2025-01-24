@@ -20,32 +20,22 @@ class Author(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    subscribers = models.ManyToManyField(User, related_name='subscribed_categories', blank=True)
 
     def __str__(self):
         return self.name
 
 
 class Announcement(models.Model):
-    CATEGORY_CHOICES = [
-        ('TA', 'Танки'),
-        ('HI', 'Хилы'),
-        ('DD', 'ДД'),
-        ('TO', 'Торговцы'),
-        ('GI', 'Гилдмастеры'),
-        ('KV', 'Квестгиверы'),
-        ('KU', 'Кузнецы'),
-        ('KO', 'Кожевники'),
-        ('ZE', 'Зельевары'),
-        ('MZ', 'Мастера заклинаний'),
-    ]
-    category = models.CharField(max_length=2, choices=CATEGORY_CHOICES, default='TA')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='ann')
     title = models.CharField(max_length=255)
     text = CKEditor5Field(
         'Content',
         config_name='default',  # Ссылка на конфигурацию в settings.py
         blank=True,
-        null=True    )
+        null=True,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -80,3 +70,11 @@ class Response(models.Model):
         return self.responses.count()
 
 
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.category.name}"
