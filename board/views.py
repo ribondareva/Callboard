@@ -1,14 +1,19 @@
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseForbidden
-from .models import Announcement, Response, Author
+
+from .models import Announcement, Response, Author, Category, Subscription
 from .forms import AnnouncementForm, ResponseForm, EmailVerificationForm
+from .filters import AnnouncementFilter, ResponseFilter
+from config import settings
 
 from django.shortcuts import render, redirect
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 import random
 
 
@@ -46,10 +51,10 @@ def send_verification_email(request):
 
                     # Отправка кода на email
                     send_mail(
-                        'Код подтверждения',
-                        f'Ваш код подтверждения: {verification_code}',
-                        'mnikitina2001@gmail.com',
-                        [email],
+                        subject='Код подтверждения',
+                        message=f'Ваш код подтверждения: {verification_code}',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[email],
                         fail_silently=False,
                     )
 
@@ -97,8 +102,18 @@ def verify_code(request):
 
 # Главная страница
 def index(request):
-    announcements = Announcement.objects.all().order_by('-created_at')
-    return render(request, 'index.html', {'announcements': announcements})
+    announcement_filter = AnnouncementFilter(request.GET, queryset=Announcement.objects.all().order_by('-created_at'))
+    filtered_announcements = announcement_filter.qs
+    paginator = Paginator(filtered_announcements, 1)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    next_page = page_obj.number + 1 if page_obj.has_next() else None
+    return render(request, 'index.html', {
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'next_page': next_page,
+        'filter': announcement_filter,
+    })
 
 
 # Просмотр одного объявления
@@ -179,12 +194,12 @@ def create_response(request, pk):
             response.save()
 
             # Отправка уведомления о новом отклике
-            # send_mail(
-            #     'Новый отклик на ваше объявление',
-            #     f'Вы получили новый отклик: {response.content}',
-            #     'mnikitina2001@gmail.com',
-            #     [announcement.author.authorUser.email],
-            # )
+            send_mail(
+                subject='Новый отклик на ваше объявление',
+                message=f'Вы получили новый отклик: "{response.content}" от {response.author}',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[announcement.author.authorUser.email],
+            )
 
             return redirect('announcement_detail', pk=pk)
     else:
@@ -197,7 +212,14 @@ def create_response(request, pk):
 @login_required
 def my_responses(request):
     announcements = Announcement.objects.filter(author__authorUser=request.user)
-    return render(request, 'my_responses.html', {'announcements': announcements})
+    responses = Response.objects.filter(announcement__in=announcements)
+    response_filter = ResponseFilter(request.GET, queryset=responses)
+    filtered_responses = response_filter.qs
+    return render(request, 'my_responses.html', {
+        'announcements': announcements,
+        'filter': response_filter,  # Передаём фильтр в шаблон
+        'responses': filtered_responses,  # Отфильтрованные отклики
+    })
 
 
 # Управление статусом отклика
@@ -215,15 +237,72 @@ def manage_response(request, pk):
             response.save()
 
             # Уведомление автору отклика
-            # send_mail(
-            #     'Ваш отклик был принят!',
-            #     f'Ваш отклик на объявление "{response.announcement.title}" был принят.',
-            #     'from@example.com',
-            #     [response.author.email],
-            # )
+            send_mail(
+                subject='Ваш отклик был принят!',
+                message=f'Ваш отклик на объявление "{response.announcement.title}" был принят.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[response.author.email],
+            )
         elif action == 'delete':
             response.delete()
 
     return redirect('my_responses')
 
 
+def category_list(request):
+    categories = Category.objects.all()
+
+    # Проверяем подписку для текущего пользователя на каждую категорию
+    for category in categories:
+        category.is_subscribed = False
+        # Проверяем, есть ли активная подписка на эту категорию
+        subscription = Subscription.objects.filter(user=request.user, category=category, is_active=True).first()
+        if subscription:
+            category.is_subscribed = True
+
+    return render(request, 'category_list.html', {'categories': categories})
+
+
+def category_announcements(request, pk):
+    category = get_object_or_404(Category, id=pk)  # Ищем категорию по ID
+    announcements = Announcement.objects.filter(category=category)  # Фильтруем по объекту категории
+    paginator = Paginator(announcements, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'category_announcements.html', {
+        'category': category,
+        'page_obj': page_obj,
+    })
+
+
+# Подписка на категорию
+def subscribe_to_category(request, pk):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Требуется авторизация'}, status=401)
+
+    category = get_object_or_404(Category, pk=pk)
+
+    # Проверяем, есть ли уже подписка на эту категорию
+    subscription, created = Subscription.objects.get_or_create(
+        user=request.user,
+        category=category,
+        is_active=True
+    )
+    return redirect('category_list')
+
+
+# Отписка от категории
+def unsubscribe_from_category(request, pk):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Требуется авторизация'}, status=401)
+
+    category = get_object_or_404(Category, pk=pk)
+
+    # Получаем подписку, если она есть
+    subscription = get_object_or_404(Subscription, user=request.user, category=category)
+
+    subscription.is_active = False  # Делаем подписку неактивной
+    subscription.save()
+
+    return redirect('category_list')
