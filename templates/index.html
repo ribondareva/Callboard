@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 {% load static %}
+{% load custom_tags %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-        <!-- Core theme CSS (includes Bootstrap)-->
+    <!-- Core theme CSS (includes Bootstrap)-->
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+
     <title>Объявления</title>
 </head>
 <body>
-    <h1>Объявления</h1>
-    {% if perms.board.add_announcement  %}
+    <div style="text-align: center;"><h1>Объявления</h1>
+    <form method="get">
+    {% if filter.form %}
+        {{ filter.form.as_p }}
+    {% else %}
+        <p>Форма фильтрации не доступна</p>
+    {% endif %}
+    <button type="submit">Искать</button>
+    </form></div>
+
+    {% if perms.board.add_announcement %}
         <a href="announcement/create/" class="btn btn-primary">Создать объявление</a>
         <a href="responses/" class="btn btn-primary">Отклики на мои объявления</a>
+        <a href="categories/" class="btn btn-primary">Подписаться на ежедневную рассылку новостей любимой категории</a>
     {% endif %}
 
     <ul>
-        {% for announcement in announcements %}
+        {% for announcement in page_obj %}
             <li>
                 <h2><a href="{% url 'announcement_detail' announcement.id %}">{{ announcement.title }}</a></h2>
-                <p>Категория: {{ announcement.get_category_display }}</p>
+                <p>Категория: <a href="{% url 'category_announcements' announcement.category.id %}">{{ announcement.category.name }}</a></p>
                 <p>Автор: {{ announcement.author.authorUser.username }}</p>
                 <p>Дата: {{ announcement.created_at|date:"d.m.Y H:i" }}</p>
             </li>
@@ -27,5 +39,32 @@
             <p>Нет доступных объявлений.</p>
         {% endfor %}
     </ul>
+
+    <!-- Пагинация -->
+    <div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number > 1 %}
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
+
+    <!-- Текущая страница -->
+    <span class="current">{{ page_obj.number }}</span>
+
+    {% if page_obj.has_next %}
+        {% if page_obj.next_page_number != paginator.num_pages %}
+            <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% endif %}
+        {% if page_obj.number != paginator.num_pages %}
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
+    </div>
+
+
+
 </body>
 </html>
