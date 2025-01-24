@@ -10,4 +10,8 @@ urlpatterns = [
     path('announcement/<int:pk>/response/', views.create_response, name='create_response'),  # Создание отклика
     path('responses/', views.my_responses, name='my_responses'),  # Отклики на свои объявления
     path('response/<int:pk>/manage/', views.manage_response, name='manage_response'),  # Управление откликом
+    path('categories/', views.category_list, name='category_list'),
+    path('categories/<int:pk>/', views.category_announcements, name='category_announcements'),
+    path('categories/<int:pk>/subscribe/', views.subscribe_to_category, name='subscribe_to_category'),  # Подписка
+    path('categories/<int:pk>/unsubscribe/', views.unsubscribe_from_category, name='unsubscribe_from_category'),
 ]
