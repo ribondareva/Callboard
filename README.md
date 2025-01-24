@@ -57,7 +57,7 @@
 ```bash
 git clone https://github.com/ribondareva/Callboard.git
 cd Callboard
-```
+```bash
 
 ### 2. Установка зависимостей
 Убедитесь, что у вас установлен Python и pip, затем выполните:
