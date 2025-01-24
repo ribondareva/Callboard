@@ -11,21 +11,18 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+# Чтение чувствительных данных из .env
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%$(wzgwhx5pldccs4ijkfa!s$8&25cf74)bg)g1(uj=go^^+pi'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "8000"]
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 
 # Application definition
@@ -44,6 +41,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_ckeditor_5',
+    'django_filters',
+    'django_celery_beat',
 ]
 
 SITE_ID = 1
@@ -124,8 +123,6 @@ PASSWORD_HASHERS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
 USE_I18N = True
 
 USE_TZ = True
@@ -141,6 +138,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
+#настройки CKEDITOR5
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar': [
@@ -155,7 +153,7 @@ CKEDITOR_5_CONFIGS = {
         ],
         'image': {
             'styles': ['alignLeft', 'alignCenter', 'alignRight'],  # Стили изображения
-            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:alignCenter', 'imageStyle:alignRight']
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:alignCenter', 'imageStyle:alignRight', ],
         },
         'height': 400,
         'width': '100%',
@@ -183,21 +181,37 @@ AUTHENTICATION_BACKENDS = (
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 
+
+# авторизация и регистрация
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # Обязательная проверка email
-
 ACCOUNT_FORMS = {'signup': 'board.forms.CustomSignupForm'}
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Callboard] '  # Префикс в теме письма
 ACCOUNT_SIGNUP_REDIRECT_URL = '/send-verification-email/'
 
-# настройки почты
+
+# Site URL
+SITE_URL = config('SITE_URL')
+
+
+# Email настройки
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'mnikitina2001@gmail.com'
-EMAIL_HOST_PASSWORD = 'avik bvxh cikx iekk'
-DEFAULT_FROM_EMAIL = 'mnikitina2001@gmail.com'  # Адрес отправителя
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+
+# Redis для очереди
+CELERY_BROKER_URL = config('REDIS_URL')
+CELERY_RESULT_BACKEND = config('REDIS_URL')
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+# Включение временных зон
+# Timezone
+TIME_ZONE = config('TIME_ZONE', default='UTC')
+CELERY_TIMEZONE = TIME_ZONE
