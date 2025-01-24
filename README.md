@@ -54,46 +54,61 @@
 ## Инструкция по установке
 
 ### 1. Клонирование репозитория
-```bash
+```
 git clone https://github.com/ribondareva/Callboard.git
 cd Callboard
-```bash
+```
 
 ### 2. Установка зависимостей
 Убедитесь, что у вас установлен Python и pip, затем выполните:
+```
+pip install -r requirements.txtэ
+```
 
-pip install -r requirements.txt
 ### 3. Настройка окружения
 Создайте файл .env в корневой директории проекта со следующим содержимым:
-```python
+```
 SECRET_KEY=<ваш_django_secret_key>
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+```
 
 # Настройка электронной почты
-```python
+```
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=<ваш_email>
 EMAIL_HOST_PASSWORD=<ваш_пароль_от_email>
+```
 
 # Настройка Redis для Celery
-```python
+```
 CELERY_BROKER_URL=redis://localhost:6379
+```
 
 ###4. Применение миграций
+```
 python manage.py migrate
+```
 
 ### 5. Запуск сервера разработки
+```
 python manage.py runserver
+```
 
 ### 6. Запуск Celery Worker
+```
 celery -A config worker -l INFO --pool=solo
+```
 
-###6. Запуск Celery Beat
+### 7. Запуск Celery Beat
+```
 celery -A config beat --loglevel=info
+```
 
-### 7. Доступ к приложению
+### 8. Доступ к приложению
+```
 Откройте http://127.0.0.1:8000 в браузере.
+```
