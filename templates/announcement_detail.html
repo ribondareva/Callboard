@@ -12,7 +12,7 @@
 </head>
 <body>
     <h1>{{ announcement.title }}</h1>
-    <p>Категория: {{ announcement.get_category_display }}</p>
+    <p>Категория: {{ announcement.category }}</p>
     <p>Автор: {{ announcement.author.authorUser.username }}</p>
     <p>Дата: {{ announcement.created_at|date:"d.m.Y H:i" }}</p>
     <p>{{ announcement.text|safe }}</p>
