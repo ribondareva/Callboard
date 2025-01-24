@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <a href="{% url 'index' %}">Ко всем объявлениям</a>
+    <title>Категории</title>
+</head>
+<body>
+<h1>Категории</h1>
+<ul>
+    {% for category in categories %}
+    <li>
+        <a href="{% url 'category_announcements' category.id %}">{{ category.name }}</a>
+        {% if category.is_subscribed %}
+            <!-- Кнопка "Отписаться" -->
+            <a href="{% url 'unsubscribe_from_category' category.id %}">Отписаться</a>
+        {% else %}
+            <!-- Кнопка "Подписаться" -->
+            <a href="{% url 'subscribe_to_category' category.id %}">Подписаться</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
+
