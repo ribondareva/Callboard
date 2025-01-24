@@ -21,6 +21,5 @@ def extract_video_id(value):
 
 @register.filter(name='regex_replace')
 def regex_replace(value, arg):
-    # Example: Replacing first occurrence of a regex pattern with the provided argument
     pattern, replacement = arg.split(',')
     return re.sub(pattern, replacement, value, count=1)
