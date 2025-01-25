@@ -73,7 +73,7 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-# Настройка электронной почты
+### Настройка электронной почты
 ```
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.gmail.com
@@ -83,7 +83,7 @@ EMAIL_HOST_USER=<ваш_email>
 EMAIL_HOST_PASSWORD=<ваш_пароль_от_email>
 ```
 
-# Настройка Redis для Celery
+### Настройка Redis для Celery
 ```
 CELERY_BROKER_URL=redis://localhost:6379
 ```
