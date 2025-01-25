@@ -88,7 +88,7 @@ EMAIL_HOST_PASSWORD=<ваш_пароль_от_email>
 CELERY_BROKER_URL=redis://localhost:6379
 ```
 
-###4. Применение миграций
+### 4. Применение миграций
 ```
 python manage.py migrate
 ```
